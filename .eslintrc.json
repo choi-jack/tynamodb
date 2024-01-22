@@ -6,7 +6,8 @@
         "plugin:@typescript-eslint/stylistic-type-checked"
     ],
     "plugins": [
-        "@typescript-eslint"
+        "@typescript-eslint",
+        "@stylistic"
     ],
     "parser": "@typescript-eslint/parser",
     "parserOptions": {
@@ -32,6 +33,11 @@
                 "variableDeclarationIgnoreFunction": true
             }
         ],
-        "@typescript-eslint/no-non-null-assertion": "warn"
+        "@typescript-eslint/no-non-null-assertion": "warn",
+        "@typescript-eslint/no-inferrable-types": "off",
+        "@stylistic/quotes": [
+            "error",
+            "single"
+        ]
     }
 }
