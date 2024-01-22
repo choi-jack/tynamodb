@@ -35,9 +35,20 @@
         ],
         "@typescript-eslint/no-non-null-assertion": "warn",
         "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/no-unused-vars": [
+            "error",
+            {
+                "argsIgnorePattern": "^_"
+            }
+        ],
+        "@typescript-eslint/consistent-generic-constructors": [
+            "error",
+            "type-annotation"
+        ],
         "@stylistic/quotes": [
             "error",
             "single"
-        ]
+        ],
+        "@stylistic/semi": "error"
     }
 }
