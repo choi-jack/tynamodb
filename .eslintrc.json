@@ -49,6 +49,11 @@
             "error",
             "single"
         ],
-        "@stylistic/semi": "error"
+        "@stylistic/semi": "error",
+        "@stylistic/member-delimiter-style": "error",
+        "@stylistic/comma-dangle": [
+            "error",
+            "always-multiline"
+        ]
     }
 }

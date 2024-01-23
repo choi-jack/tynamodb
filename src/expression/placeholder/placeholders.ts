@@ -24,7 +24,11 @@ export class Placeholders<T> {
         return placeholder;
     }
 
-    public serialize(): Readonly<Record<string, T>> {
+    public serialize(): undefined | Readonly<Record<string, T>> {
+        if (this.map.size === 0) {
+            return undefined;
+        }
+
         return Object.fromEntries(
             Array
                 .from(this.map)
