@@ -33,11 +33,11 @@
         "url": "git+https://github.com/choi-jack/tynamodb.git"
     },
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.474.0",
-        "@aws-sdk/lib-dynamodb": "^3.474.0",
         "tslib": "^2.6.2"
     },
     "devDependencies": {
+        "@aws-sdk/client-dynamodb": "^3.496.0",
+        "@aws-sdk/lib-dynamodb": "^3.496.0",
         "@jest/globals": "^29.7.0",
         "@stylistic/eslint-plugin": "^1.5.4",
         "@tsconfig/node20": "^20.1.2",
