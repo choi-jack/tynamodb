@@ -11,8 +11,8 @@ describe('expression', (): void => {
     }
 
     function placeholders(expectedNames: Readonly<Record<string, string>>, expectedValues: Readonly<Record<string, unknown>>): void {
-        expect(names.serialize()).toStrictEqual(expectedNames);
-        expect(values.serialize()).toStrictEqual(expectedValues);
+        expect(names.serialize() ?? {}).toStrictEqual(expectedNames);
+        expect(values.serialize() ?? {}).toStrictEqual(expectedValues);
     }
 
     beforeEach((): void => {
