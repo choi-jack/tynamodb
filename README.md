@@ -138,6 +138,27 @@ update(
 );
 ```
 
+Nested attribute expressions and attribute expressions containing special characters can be created as follows:
+
+```typescript
+attribute('a', 'b', 0, 'c', 1, 2, 'd.e', '34');
+```
+
+Created attribute expression are evaluated as follows:
+
+```typescript
+{
+    Expression: '#0.#1[0].#2[1][2].#3.#4',
+    ExpressionAttributeNames: {
+        '#0': 'a',
+        '#1': 'b',
+        '#2': 'c',
+        '#3': 'd.e',
+        '#4': '34',
+    },
+}
+```
+
 ## License
 
 Distributed under the MIT License. See the [LICENSE](https://github.com/choi-jack/tynamodb/blob/main/LICENSE) file for more details.
