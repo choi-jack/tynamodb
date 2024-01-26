@@ -1,3 +1,12 @@
+# [0.2.0](https://github.com/choi-jack/tynamodb/compare/v0.1.0...v0.2.0) (2024-01-26)
+
+
+### Features
+
+* Add transaction feature ([fdcc71f](https://github.com/choi-jack/tynamodb/commit/fdcc71f9ab68e6ef3a24bab7f5e8fbacb9438827))
+
+
+
 # 0.1.0 (2024-01-24)
 
 
