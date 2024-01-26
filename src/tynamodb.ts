@@ -1,12 +1,22 @@
 import { Capacity as DynamoDBCapacity, DynamoDBClient, ConsumedCapacity as DynamoDBConsumedCapacity, ItemCollectionMetrics as DynamoDBItemCollectionMetrics } from '@aws-sdk/client-dynamodb';
-import { DeleteCommandOutput, DynamoDBDocument, GetCommandOutput, PutCommandOutput, QueryCommandOutput, ScanCommandOutput, UpdateCommandOutput } from '@aws-sdk/lib-dynamodb';
+import { DeleteCommandOutput, DynamoDBDocument, GetCommandOutput, PutCommandOutput, QueryCommandOutput, ScanCommandOutput, TransactGetCommandInput, TransactGetCommandOutput, TransactWriteCommandInput, TransactWriteCommandOutput, UpdateCommandOutput } from '@aws-sdk/lib-dynamodb';
 
 import { Expression, ExpressionAttributeNames, ExpressionAttributeValues } from './expression.js';
-import { Capacity, ConsumedCapacity, DeleteInput, DeleteOutput, GetInput, GetOutput, Item, ItemCollectionMetrics, Key, PutInput, PutOutput, QueryInput, QueryOutput, ScanInput, ScanOutput, UpdateInput, UpdateOutput } from './operations.js';
+import { Capacity, ConsumedCapacity, DeleteInput, DeleteOutput, GetInput, GetOutput, Item, ItemCollectionMetrics, Key, PutInput, PutOutput, QueryInput, QueryOutput, ScanInput, ScanOutput, TransactGetInput, TransactGetItem, TransactGetOutput, TransactWriteInput, TransactWriteItem, TransactWriteItemType, TransactWriteOutput, UpdateInput, UpdateOutput } from './operations.js';
+
+type ArrayElement<T> = T extends Array<infer E>
+    ? E
+    : never;
 
 type DynamoDBUnmarshalledItemCollectionMetrics = Omit<DynamoDBItemCollectionMetrics, 'ItemCollectionKey'> & {
     readonly ItemCollectionKey?: Key;
 };
+
+type DynamoDBTransactGetItem = ArrayElement<TransactGetCommandInput['TransactItems']>;
+
+type DynamoDBItemResponse = ArrayElement<TransactGetCommandOutput['Responses']>;
+
+type DynamoDBTransactWriteItem = ArrayElement<TransactWriteCommandInput['TransactItems']>;
 
 export class TynamoDB {
     private readonly client: DynamoDBDocument;
@@ -60,6 +70,8 @@ export class TynamoDB {
         );
     }
 
+    private mapConsumedCapacity(consumedCapacity: DynamoDBConsumedCapacity): ConsumedCapacity;
+    private mapConsumedCapacity(consumedCapacity: undefined | DynamoDBConsumedCapacity): null | ConsumedCapacity;
     private mapConsumedCapacity(consumedCapacity: undefined | DynamoDBConsumedCapacity): null | ConsumedCapacity {
         if (consumedCapacity === undefined) {
             return null;
@@ -74,6 +86,8 @@ export class TynamoDB {
         };
     }
 
+    private mapItemCollectionMetrics(itemCollectionMetrics: DynamoDBUnmarshalledItemCollectionMetrics): ItemCollectionMetrics;
+    private mapItemCollectionMetrics(itemCollectionMetrics: undefined | DynamoDBUnmarshalledItemCollectionMetrics): null | ItemCollectionMetrics;
     private mapItemCollectionMetrics(itemCollectionMetrics: undefined | DynamoDBUnmarshalledItemCollectionMetrics): null | ItemCollectionMetrics {
         if (itemCollectionMetrics === undefined) {
             return null;
@@ -235,6 +249,112 @@ export class TynamoDB {
             items: output.Items! as ReadonlyArray<T>,
             lastEvaluatedKey: this.sanitize(output.LastEvaluatedKey),
             scannedCount: output.ScannedCount!,
+        };
+    }
+
+    public async transactGet<T extends Item = Item>(input: TransactGetInput): Promise<TransactGetOutput<T>> {
+        const output: TransactGetCommandOutput = await this.client.transactGet({
+            ReturnConsumedCapacity: input.returnConsumedCapacity,
+            TransactItems: input.transactItems.map((transactItem: TransactGetItem): DynamoDBTransactGetItem => {
+                const names: ExpressionAttributeNames = new ExpressionAttributeNames();
+                const values: ExpressionAttributeValues = new ExpressionAttributeValues();
+
+                return {
+                    Get: {
+                        Key: transactItem.key,
+                        ProjectionExpression: this.evaluateExpression(transactItem.projectionExpression, names, values),
+                        TableName: transactItem.tableName,
+
+                        ExpressionAttributeNames: names.serialize(),
+                    },
+                };
+            }),
+        });
+
+        return {
+            consumedCapacity: output.ConsumedCapacity === undefined
+                ? null
+                : output.ConsumedCapacity.map((consumedCapacity: DynamoDBConsumedCapacity): ConsumedCapacity => this.mapConsumedCapacity(consumedCapacity)),
+            responses: output.Responses!.map((response: DynamoDBItemResponse): null | T => this.sanitize(response.Item)),
+        };
+    }
+
+    public async transactWrite(input: TransactWriteInput): Promise<TransactWriteOutput> {
+        const output: TransactWriteCommandOutput = await this.client.transactWrite({
+            ClientRequestToken: input.clientRequestToken,
+            ReturnConsumedCapacity: input.returnConsumedCapacity,
+            ReturnItemCollectionMetrics: input.returnItemCollectionMetrics,
+            TransactItems: input.transactItems.map((transactItem: TransactWriteItem): DynamoDBTransactWriteItem => {
+                const names: ExpressionAttributeNames = new ExpressionAttributeNames();
+                const values: ExpressionAttributeValues = new ExpressionAttributeValues();
+
+                switch (transactItem.type) {
+                    case TransactWriteItemType.CONDITION_CHECK: return {
+                        ConditionCheck: {
+                            ConditionExpression: this.evaluateExpression(transactItem.conditionExpression, names, values),
+                            Key: transactItem.key,
+                            ReturnValuesOnConditionCheckFailure: transactItem.returnValuesOnConditionCheckFailure,
+                            TableName: transactItem.tableName,
+
+                            ExpressionAttributeNames: names.serialize(),
+                            ExpressionAttributeValues: values.serialize(),
+                        },
+                    };
+
+                    case TransactWriteItemType.DELETE: return {
+                        Delete: {
+                            ConditionExpression: this.evaluateExpression(transactItem.conditionExpression, names, values),
+                            Key: transactItem.key,
+                            ReturnValuesOnConditionCheckFailure: transactItem.returnValuesOnConditionCheckFailure,
+                            TableName: transactItem.tableName,
+
+                            ExpressionAttributeNames: names.serialize(),
+                            ExpressionAttributeValues: values.serialize(),
+                        },
+                    };
+
+                    case TransactWriteItemType.PUT: return {
+                        Put: {
+                            ConditionExpression: this.evaluateExpression(transactItem.conditionExpression, names, values),
+                            Item: transactItem.item,
+                            ReturnValuesOnConditionCheckFailure: transactItem.returnValuesOnConditionCheckFailure,
+                            TableName: transactItem.tableName,
+
+                            ExpressionAttributeNames: names.serialize(),
+                            ExpressionAttributeValues: values.serialize(),
+                        },
+                    };
+
+                    case TransactWriteItemType.UPDATE: return {
+                        Update: {
+                            ConditionExpression: this.evaluateExpression(transactItem.conditionExpression, names, values),
+                            Key: transactItem.key,
+                            ReturnValuesOnConditionCheckFailure: transactItem.returnValuesOnConditionCheckFailure,
+                            TableName: transactItem.tableName,
+                            UpdateExpression: this.evaluateExpression(transactItem.updateExpression, names, values),
+
+                            ExpressionAttributeNames: names.serialize(),
+                            ExpressionAttributeValues: values.serialize(),
+                        },
+                    };
+                }
+            }),
+        });
+
+        return {
+            consumedCapacity: output.ConsumedCapacity === undefined
+                ? null
+                : output.ConsumedCapacity.map((consumedCapacity: DynamoDBConsumedCapacity): ConsumedCapacity => this.mapConsumedCapacity(consumedCapacity)),
+            itemCollectionMetrics: output.ItemCollectionMetrics === undefined
+                ? null
+                : Object.fromEntries(
+                    Object
+                        .entries(output.ItemCollectionMetrics)
+                        .map(([tableName, itemCollectionMetrics]: [string, ReadonlyArray<DynamoDBUnmarshalledItemCollectionMetrics>]) => [
+                            tableName,
+                            itemCollectionMetrics.map((itemCollectionMetrics: DynamoDBUnmarshalledItemCollectionMetrics): ItemCollectionMetrics => this.mapItemCollectionMetrics(itemCollectionMetrics)),
+                        ]),
+                ),
         };
     }
 }

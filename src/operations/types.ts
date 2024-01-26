@@ -46,6 +46,8 @@ export interface ItemCollectionMetrics {
     readonly sizeEstimateRangeGB: readonly [number, number];
 }
 
+export type ItemCollectionMetricsMap = Readonly<Record<string, ReadonlyArray<ItemCollectionMetrics>>>;
+
 export enum Select {
     ALL_ATTRIBUTES = 'ALL_ATTRIBUTES',
     ALL_PROJECTED_ATTRIBUTES = 'ALL_PROJECTED_ATTRIBUTES',
