@@ -1,3 +1,14 @@
+# [0.3.0](https://github.com/choi-jack/tynamodb/compare/v0.2.0...v0.3.0) (2024-08-30)
+
+
+### Features
+
+* Change client to public ([0b0208d](https://github.com/choi-jack/tynamodb/commit/0b0208ddfd427e60f3d746b311d4ec11f5e0c0c6))
+* Change object types ([e4f7108](https://github.com/choi-jack/tynamodb/commit/e4f7108604806733d856a41bc532106be971edee))
+* Update dependencies ([95e3215](https://github.com/choi-jack/tynamodb/commit/95e321557421b09beeb67a240f814e0ab76f6bf3))
+
+
+
 # [0.2.0](https://github.com/choi-jack/tynamodb/compare/v0.1.0...v0.2.0) (2024-01-26)
 
 
