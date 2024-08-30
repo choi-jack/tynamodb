@@ -17,11 +17,11 @@ export interface ConsumedCapacity extends Capacity {
     readonly tableName: string;
 }
 
-export type Key = Readonly<Record<string, unknown>>;
+export type Key = object;
 
-export type Item = Readonly<Record<string, unknown>>;
+export type Item = object;
 
-export type Attributes = Readonly<Record<string, unknown>>;
+export type Attributes = object;
 
 export enum ReturnItemCollectionMetrics {
     SIZE = 'SIZE',
