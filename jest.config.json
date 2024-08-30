@@ -14,5 +14,9 @@
             }
         ]
     },
-    "collectCoverage": true
+    "collectCoverage": true,
+    "collectCoverageFrom": [
+        "./src/**"
+    ],
+    "verbose": true
 }
