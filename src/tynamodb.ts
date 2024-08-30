@@ -19,7 +19,7 @@ type DynamoDBItemResponse = ArrayElement<TransactGetCommandOutput['Responses']>;
 type DynamoDBTransactWriteItem = ArrayElement<TransactWriteCommandInput['TransactItems']>;
 
 export class TynamoDB {
-    private readonly client: DynamoDBDocument;
+    public readonly client: DynamoDBDocument;
 
     public constructor(client?: null | DynamoDBDocument) {
         this.client = client ?? DynamoDBDocument.from(new DynamoDBClient());
