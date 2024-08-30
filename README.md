@@ -14,7 +14,7 @@ This package is based on the AWS SDK for JavaScript v3. For more information abo
 
 The following versions of Node.js and TypeScript are required:
 
-- Node.js 16 or higher
+- Node.js 20 or higher
 - TypeScript 4.7 or higher
 
 This package is [pure ESM](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c), and you must configure your project to use the ESM package.
